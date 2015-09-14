@@ -1,0 +1,54 @@
+apply plugin: 'groovy'
+apply plugin: 'war'
+apply plugin: 'jetty'
+
+import groovy.sql.Sql
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+    driver
+}
+dependencies {
+    driver group: 'mysql', name: 'mysql-connector-java', version: '5.1.36'
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    runtime 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
+}
+
+URLClassLoader loader = GroovyObject.class.classLoader
+configurations.driver.each {File file ->
+    loader.addURL(file.toURL())
+}
+
+task connectToDb << {
+    def props = [user: 'user', password: 'password', allowMultiQueries: 'true'] as Properties
+    def url = 'jdbc:mysql://localhost:3306/db'
+    def driver = 'com.mysql.jdbc.Driver'
+    def sql = Sql.newInstance(url, props, driver)
+
+    sql.eachRow('show tables') { row ->
+        println row[0]
+    }
+}
+
+war {
+  webInf { from 'src/main/webap/WEB-INF' }
+  //webXml = file('src/main/webapp/WEB-INF/web.xml')
+}
+
+String tomcatDir = '/usr/local/Cellar/tomcat/8.0.26/libexec/'
+task setUpTomcatConf(type: Copy) << {
+	println "==> Setting up tomcat conf/tomcat-users.xml:"
+  
+  // Copy src/tomcat-conf/tomcat-users.xml to destination
+  from 'src/tomcat-conf/tomcat-users.xml'
+  into tomcatDir + 'conf'
+  
+  println file(tomcatDir + '/conf/tomcat-users.xml').text
+}
+
+
+
