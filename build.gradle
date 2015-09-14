@@ -12,31 +12,54 @@ configurations {
     driver
 }
 dependencies {
-    driver group: 'mysql', name: 'mysql-connector-java', version: '5.1.36'
+  driver group: 'mysql', name: 'mysql-connector-java', version: '5.1.36'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
-    runtime 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
+  providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+  runtime 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
 }
 
 URLClassLoader loader = GroovyObject.class.classLoader
 configurations.driver.each {File file ->
-    loader.addURL(file.toURL())
+  loader.addURL(file.toURL())
 }
 
-task connectToDb << {
-    def props = [user: 'user', password: 'password', allowMultiQueries: 'true'] as Properties
-    def url = 'jdbc:mysql://localhost:3306/db'
-    def driver = 'com.mysql.jdbc.Driver'
-    def sql = Sql.newInstance(url, props, driver)
+def dbProps = [user: 'user', password: 'password', allowMultiQueries: 'true'] as Properties
+def dbUrl = 'jdbc:mysql://localhost:3306'
+def dbDriver = 'com.mysql.jdbc.Driver'
 
-    sql.eachRow('show tables') { row ->
-        println row[0]
-    }
+task createDB << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+//    sql.eachRow("SELECT User,Host FROM mysql.user") { row ->
+//      println(row)
+//    }
+
+    sql.execute '''
+CREATE DATABASE alm;
+'''
+
+    sql.execute '''
+USE alm;
+'''
+
+    sql.execute '''
+CREATE TABLE alm_users (
+  username VARCHAR(20),
+  password VARCHAR(20)
+);
+'''
+  }
+}
+
+task dropDB << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+    sql.execute '''
+DROP DATABASE alm;
+'''
+  }
 }
 
 war {
   webInf { from 'src/main/webap/WEB-INF' }
-  //webXml = file('src/main/webapp/WEB-INF/web.xml')
 }
 
 String tomcatDir = '/usr/local/Cellar/tomcat/8.0.26/libexec/'

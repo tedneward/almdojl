@@ -1,0 +1,7 @@
+After MySQL is installed and running, connect to it to create the user
+
+mysql -u root
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON *.* TO 'user'@'localhost';
+
+
