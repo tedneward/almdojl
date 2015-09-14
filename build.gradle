@@ -27,6 +27,10 @@ def dbProps = [user: 'user', password: 'password', allowMultiQueries: 'true'] as
 def dbUrl = 'jdbc:mysql://localhost:3306'
 def dbDriver = 'com.mysql.jdbc.Driver'
 
+////////
+// Create the database; assumes (deliberately) the database does not exist
+// Does not try to do any kind of db migration
+//
 task createDB << {
   Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
 //    sql.eachRow("SELECT User,Host FROM mysql.user") { row ->
@@ -50,6 +54,18 @@ CREATE TABLE alm_users (
   }
 }
 
+////////
+// Seed the database with a set of sample data, including users
+//
+task seedDB << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+  }
+}
+
+////////
+// Drop the database; typically used as the predecessor to createDB,
+// as a cheap (and destructive!) way of doing db migrations
+//
 task dropDB << {
   Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
     sql.execute '''
@@ -62,6 +78,11 @@ war {
   webInf { from 'src/main/webap/WEB-INF' }
 }
 
+////////
+// Destructive way of ensuring that Tomcat has a good user cred set
+// for the Manager GUI for easier admin of Tomcat in an Azure VM
+// instance
+//
 String tomcatDir = '/usr/local/Cellar/tomcat/8.0.26/libexec/'
 task setUpTomcatConf(type: Copy) << {
 	println "==> Setting up tomcat conf/tomcat-users.xml:"
