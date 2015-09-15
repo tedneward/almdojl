@@ -33,20 +33,13 @@ def dbDriver = 'com.mysql.jdbc.Driver'
 //
 task createDB << {
   Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
-//    sql.eachRow("SELECT User,Host FROM mysql.user") { row ->
-//      println(row)
-//    }
+    sql.execute 'CREATE DATABASE alm;'
 
-    sql.execute '''
-CREATE DATABASE alm;
-'''
-
-    sql.execute '''
-USE alm;
-'''
+    sql.execute 'USE alm;'
 
     sql.execute '''
 CREATE TABLE alm_users (
+  id INT AUTO_INCREMENT UNIQUE,
   username VARCHAR(20),
   password VARCHAR(20)
 );
@@ -59,7 +52,6 @@ CREATE TABLE alm_users (
 //
 task seedDB << {
   Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
-    
     sql.execute 'USE alm';
     
     // Populate with a few users
@@ -69,7 +61,7 @@ task seedDB << {
     
     // Verify they got added
     sql.eachRow('SELECT username, password FROM alm_users') { row ->
-      println("    Found ${row.username} / ${row.password}")
+      println("    Found ${row.id}: ${row.username} / ${row.password}")
     }
   }
 }
