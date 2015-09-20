@@ -12,33 +12,89 @@ configurations {
     driver
 }
 dependencies {
-    driver group: 'mysql', name: 'mysql-connector-java', version: '5.1.36'
+  driver group: 'mysql', name: 'mysql-connector-java', version: '5.1.36'
 
-    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
-    runtime 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
+  providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+  runtime 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
 }
 
 URLClassLoader loader = GroovyObject.class.classLoader
 configurations.driver.each {File file ->
-    loader.addURL(file.toURL())
+  loader.addURL(file.toURL())
 }
 
-task connectToDb << {
-    def props = [user: 'user', password: 'password', allowMultiQueries: 'true'] as Properties
-    def url = 'jdbc:mysql://localhost:3306/db'
-    def driver = 'com.mysql.jdbc.Driver'
-    def sql = Sql.newInstance(url, props, driver)
+def dbProps = [user: 'user', password: 'password', allowMultiQueries: 'true'] as Properties
+def dbUrl = 'jdbc:mysql://localhost:3306'
+def dbDriver = 'com.mysql.jdbc.Driver'
 
-    sql.eachRow('show tables') { row ->
-        println row[0]
+////////
+// Create the database; assumes (deliberately) the database does not exist
+// Does not try to do any kind of db migration
+//
+task createDB << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+//    sql.eachRow("SELECT User,Host FROM mysql.user") { row ->
+//      println(row)
+//    }
+
+    sql.execute '''
+CREATE DATABASE alm;
+'''
+
+    sql.execute '''
+USE alm;
+'''
+
+    sql.execute '''
+CREATE TABLE alm_users (
+  username VARCHAR(20),
+  password VARCHAR(20)
+);
+'''
+  }
+}
+
+////////
+// Seed the database with a set of sample data, including users
+//
+task seedDB << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+    
+    sql.execute 'USE alm';
+    
+    // Populate with a few users
+    def insertSql = "INSERT INTO alm_users (username, password) VALUES (?,?)"
+    sql.executeInsert insertSql, ['fred', 'fredpassword']
+    sql.executeInsert insertSql, ['barney', 'barneypassword']
+    
+    // Verify they got added
+    sql.eachRow('SELECT username, password FROM alm_users') { row ->
+      println("    Found ${row.username} / ${row.password}")
     }
+  }
+}
+
+////////
+// Drop the database; typically used as the predecessor to createDB,
+// as a cheap (and destructive!) way of doing db migrations
+//
+task dropDB << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+    sql.execute '''
+DROP DATABASE alm;
+'''
+  }
 }
 
 war {
   webInf { from 'src/main/webap/WEB-INF' }
-  //webXml = file('src/main/webapp/WEB-INF/web.xml')
 }
 
+////////
+// Destructive way of ensuring that Tomcat has a good user cred set
+// for the Manager GUI for easier admin of Tomcat in an Azure VM
+// instance
+//
 String tomcatDir = '/usr/local/Cellar/tomcat/8.0.26/libexec/'
 task setUpTomcatConf(type: Copy) << {
 	println "==> Setting up tomcat conf/tomcat-users.xml:"
