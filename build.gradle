@@ -3,6 +3,7 @@ apply plugin: 'war'
 apply plugin: 'jetty'
 
 import groovy.sql.Sql
+import groovy.time.TimeCategory
 
 repositories {
   mavenCentral()
@@ -80,7 +81,7 @@ task seedDB << {
     sql.executeInsert insertSql, ['betty', 'bettypassword']
     
     // Verify they got added
-    sql.eachRow('SELECT username, password FROM alm_users') { row ->
+    sql.eachRow('SELECT id, username, password FROM alm_users') { row ->
       println("    Found ${row.id}: ${row.username} / ${row.password}")
     }
   }
@@ -90,9 +91,76 @@ task seedDB << {
 // Add some randomly-generated data to make it look like an employee
 // has just handled a new fare
 //
+def randomEmployee() {
+  Random randomer = new java.util.Random();
+  return randomer.nextInt(4) + 1
+}
+def randomAddress() {
+  Random randomer = new java.util.Random();
+  def streets = (String[]) [
+    "Hunting Lane",
+    "Mammoth Way",
+    "Wooly Way",
+    "Shale St",
+    "Hard Rock Pl",
+    "Brontosaurus Blvd",
+    "Stegasaurus St"
+  ];
+  def cities = (String[]) [
+    "Bedrock, WA",
+    "Limestone, WA",
+    "Topsoil, WA",
+    "Rock Gardens, WA"
+  ];
+  return (randomer.nextInt(100) + 1) + " " +
+    (streets[randomer.nextInt(streets.length)]) + ", " +
+    (cities[randomer.nextInt(cities.length)]);
+}
+def randomStart() {
+  
+}
+def randomFare() {
+  Random randomer = new java.util.Random();
+  return 500 + (randomer.nextInt(2500));
+}
+
+// Simple test to verify randomization works; shouldn't be
+// needed for any other purpose
+task testAddress << {
+  (1..100).each {
+    println randomEmployee() + ":" + randomAddress() + " = \$" + (randomFare() / 100);
+  }
+}
+
+////////
+// Stick some random fares into the database
+//
 task addFares << {
+  Random randomer = new java.util.Random();
+  def numFares = randomer.nextInt(10) + 1;
+  println "Adding $numFares fares into the database"
+
   Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
     sql.execute 'USE alm';
+    
+    (1..numFares).each {
+      def emp_id = randomEmployee()
+      def pickup = randomAddress()
+      def dropoff = randomAddress()
+      def start = null
+      def end = null
+      def fare_charge = randomFare()
+      def driver_fee = (int) (fare_charge * 0.75)
+      def p_rating = randomer.nextInt(5) + 1
+      def d_rating = randomer.nextInt(5) + 1
+      
+      println "Employee $emp_id drove from $pickup to $dropoff from $start to $end . Charged $fare_charge , earned $driver_fee . Passenger: $p_rating . Driver: $d_rating ."
+      
+      def insertSql = "INSERT INTO fares " + 
+        "(emp_id, pickup, dropoff, start, end, fare_charge, driver_fee, passenger_rating, driver_rating) " + 
+        "VALUES (?,?,?,?,?,?,?,?,?)"
+      sql.executeInsert insertSql, [emp_id, pickup, dropoff, start, end, fare_charge, driver_fee, p_rating, d_rating]
+    }
   }
 }
 
