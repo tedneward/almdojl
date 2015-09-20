@@ -1,4 +1,4 @@
-package org.gradle.examples.web;
+package com.microsoft.example;
 
 import java.io.PrintWriter;
 import java.io.IOException;

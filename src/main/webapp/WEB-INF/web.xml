@@ -6,7 +6,7 @@
   <servlet>
    <display-name>servlet</display-name>
    <servlet-name>servlet</servlet-name>
-   <servlet-class>org.gradle.examples.web.Servlet</servlet-class>
+   <servlet-class>com.microsoft.example.Servlet</servlet-class>
  </servlet>
  
   <servlet-mapping>
