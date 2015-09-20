@@ -91,12 +91,11 @@ task seedDB << {
 // Add some randomly-generated data to make it look like an employee
 // has just handled a new fare
 //
-def randomEmployee() {
+def randomFare() {
   Random randomer = new java.util.Random();
-  return randomer.nextInt(4) + 1
-}
-def randomAddress() {
-  Random randomer = new java.util.Random();
+
+  def emp_id = (randomer.nextInt(4) + 1);
+
   def streets = (String[]) [
     "Hunting Lane",
     "Mammoth Way",
@@ -112,23 +111,40 @@ def randomAddress() {
     "Topsoil, WA",
     "Rock Gardens, WA"
   ];
-  return (randomer.nextInt(100) + 1) + " " +
+  def pickup = (randomer.nextInt(100) + 1) + " " +
     (streets[randomer.nextInt(streets.length)]) + ", " +
     (cities[randomer.nextInt(cities.length)]);
-}
-def randomStart() {
-  Random randomer = new java.util.Random();
-  def start = Date.parse("dd-MM-yyyy", "01-01-2014")
-  def date = start.plus(randomer.nextInt(365))
+  def dropoff = (randomer.nextInt(100) + 1) + " " +
+    (streets[randomer.nextInt(streets.length)]) + ", " +
+    (cities[randomer.nextInt(cities.length)]);
+
+  def date = Date.parse("dd-MM-yyyy", "01-01-2014").plus(randomer.nextInt(600))
+  def start = null
+  def end = null
   use (TimeCategory) {
     def startHour = randomer.nextInt(24);
     def startMinute = randomer.nextInt(60);
-    return date + startHour.hours + startMinute.minutes
+    start = date + startHour.hours + startMinute.minutes
+    end = start + (randomer.nextInt(45)).minutes
   }
-}
-def randomFare() {
-  Random randomer = new java.util.Random();
-  return 500 + (randomer.nextInt(2500));
+  
+  def fare = 500 + (randomer.nextInt(2500))
+  def fee = (int) (fare * 0.75)
+
+  def d_rating = (randomer.nextInt(5)) + 1
+  def p_rating = (randomer.nextInt(5)) + 1
+
+  return [
+    emp_id : emp_id,
+    pickup : pickup,
+    dropoff : dropoff,
+    start : start,
+    end : end,
+    fare_charge : fare,
+    driver_fee : fee,
+    d_rating : d_rating,
+    p_rating : p_rating
+  ]
 }
 
 // Simple test to verify randomization works; shouldn't be
@@ -139,20 +155,9 @@ task testAddFares << {
   println "Adding $numFares fares into the database"
 
   (1..numFares).each {
-    def emp_id = randomEmployee()
-    def pickup = randomAddress()
-    def dropoff = randomAddress()
-    def start = randomStart()
-    def end = start
-    use (TimeCategory) {
-      end = start + (randomer.nextInt(45)).minutes
-    }
-    def fare_charge = randomFare()
-    def driver_fee = (int) (fare_charge * 0.75)
-    def p_rating = randomer.nextInt(5) + 1
-    def d_rating = randomer.nextInt(5) + 1
-    
-    println "Employee $emp_id drove from $pickup to $dropoff from $start to $end; charged $fare_charge, earned $driver_fee; Passenger: $p_rating; Driver: $d_rating"
+    def fare = randomFare()
+    println "Employee $fare.emp_id drove from $fare.pickup to $fare.dropoff from $fare.start to $fare.end;" + 
+      " charged $fare.fare_charge, earned $fare.driver_fee; Passenger: $fare.p_rating; Driver: $fare.d_rating"
   }
 }
 
@@ -169,25 +174,14 @@ task addFares << {
     sql.execute 'USE alm';
     
     (1..numFares).each {
-      def emp_id = randomEmployee()
-      def pickup = randomAddress()
-      def dropoff = randomAddress()
-      def start = randomStart()
-      def end = start
-      use (TimeCategory) {
-        end = start + (randomer.nextInt(45)).minutes
-      }
-      def fare_charge = randomFare()
-      def driver_fee = (int) (fare_charge * 0.75)
-      def p_rating = randomer.nextInt(5) + 1
-      def d_rating = randomer.nextInt(5) + 1
-      
-      println "Employee $emp_id drove from $pickup to $dropoff from $start to $end . Charged $fare_charge , earned $driver_fee . Passenger: $p_rating . Driver: $d_rating ."
+      def fare = randomFare()
+      println "Employee $fare.emp_id drove from $fare.pickup to $fare.dropoff from $fare.start to $fare.end;" + 
+        " charged $fare.fare_charge, earned $fare.driver_fee; Passenger: $fare.p_rating; Driver: $fare.d_rating"
       
       def insertSql = "INSERT INTO fares " + 
         "(emp_id, pickup, dropoff, start, end, fare_charge, driver_fee, passenger_rating, driver_rating) " + 
         "VALUES (?,?,?,?,?,?,?,?,?)"
-      sql.executeInsert insertSql, [emp_id, pickup, dropoff, start, end, fare_charge, driver_fee, p_rating, d_rating]
+      sql.executeInsert insertSql, [fare.emp_id, fare.pickup, fare.dropoff, fare.start, fare.end, fare.fare_charge, fare.driver_fee, fare.p_rating, fare.d_rating]
     }
   }
 }
