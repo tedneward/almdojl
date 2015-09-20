@@ -41,7 +41,7 @@ task createDB << {
     sql.execute 'USE alm;'
 
     sql.execute '''
-CREATE TABLE alm_users (
+CREATE TABLE employees (
   id INT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(20),
   password VARCHAR(20)
@@ -60,28 +60,28 @@ CREATE TABLE fares (
   driver_fee INT COMMENT 'USD in pennies',
   passenger_rating TINYINT UNSIGNED COMMENT 'From 0 to 5',
   driver_rating TINYINT UNSIGNED COMMENT 'From 0 to 5',
-  FOREIGN KEY (emp_id) references alm_users(id)
+  FOREIGN KEY (emp_id) references employees(id)
 );
 '''
   }
 }
 
 ////////
-// Seed the database with a set of sample data, including users
+// Seed the database with employees
 //
 task seedDB << {
   Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
     sql.execute 'USE alm';
     
     // Populate with a few users
-    def insertSql = "INSERT INTO alm_users (username, password) VALUES (?,?)"
+    def insertSql = "INSERT INTO employees (username, password) VALUES (?,?)"
     sql.executeInsert insertSql, ['fred', 'fredpassword']
     sql.executeInsert insertSql, ['barney', 'barneypassword']
     sql.executeInsert insertSql, ['wilma', 'wilmapassword']
     sql.executeInsert insertSql, ['betty', 'bettypassword']
     
     // Verify they got added
-    sql.eachRow('SELECT id, username, password FROM alm_users') { row ->
+    sql.eachRow('SELECT id, username, password FROM employees') { row ->
       println("    Found ${row.id}: ${row.username} / ${row.password}")
     }
   }
