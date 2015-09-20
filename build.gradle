@@ -41,19 +41,27 @@ task createDB << {
 
     sql.execute '''
 CREATE TABLE alm_users (
-  id INT AUTO_INCREMENT UNIQUE,
+  id INT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(20),
   password VARCHAR(20)
 );
 '''
 
-//    sql.execute '''
-//CREATE TABLE alm_users
-//  id INT AUTO_INCREMENT UNIQUE,
-//  username VARCHAR(20),
-//  password VARCHAR(20)
-//);
-//'''
+    sql.execute '''
+CREATE TABLE fares (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  emp_id INT,
+  pickup VARCHAR(50) COMMENT 'Street address',
+  dropoff VARCHAR(50) COMMENT 'Street address',
+  start DATETIME,
+  end DATETIME,
+  fare_charge INT COMMENT 'USD in pennies',
+  driver_fee INT COMMENT 'USD in pennies',
+  passenger_rating TINYINT UNSIGNED COMMENT 'From 0 to 5',
+  driver_rating TINYINT UNSIGNED COMMENT 'From 0 to 5',
+  FOREIGN KEY (emp_id) references alm_users(id)
+);
+'''
   }
 }
 
@@ -68,11 +76,23 @@ task seedDB << {
     def insertSql = "INSERT INTO alm_users (username, password) VALUES (?,?)"
     sql.executeInsert insertSql, ['fred', 'fredpassword']
     sql.executeInsert insertSql, ['barney', 'barneypassword']
+    sql.executeInsert insertSql, ['wilma', 'wilmapassword']
+    sql.executeInsert insertSql, ['betty', 'bettypassword']
     
     // Verify they got added
     sql.eachRow('SELECT username, password FROM alm_users') { row ->
       println("    Found ${row.id}: ${row.username} / ${row.password}")
     }
+  }
+}
+
+////////
+// Add some randomly-generated data to make it look like an employee
+// has just handled a new fare
+//
+task addFares << {
+  Sql.withInstance(dbUrl, dbProps, dbDriver) { sql ->
+    sql.execute 'USE alm';
   }
 }
 
