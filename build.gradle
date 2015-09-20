@@ -117,7 +117,14 @@ def randomAddress() {
     (cities[randomer.nextInt(cities.length)]);
 }
 def randomStart() {
-  
+  Random randomer = new java.util.Random();
+  def start = Date.parse("dd-MM-yyyy", "01-01-2014")
+  def date = start.plus(randomer.nextInt(365))
+  use (TimeCategory) {
+    def startHour = randomer.nextInt(24);
+    def startMinute = randomer.nextInt(60);
+    return date + startHour.hours + startMinute.minutes
+  }
 }
 def randomFare() {
   Random randomer = new java.util.Random();
@@ -126,11 +133,29 @@ def randomFare() {
 
 // Simple test to verify randomization works; shouldn't be
 // needed for any other purpose
-task testAddress << {
-  (1..100).each {
-    println randomEmployee() + ":" + randomAddress() + " = \$" + (randomFare() / 100);
+task testAddFares << {
+  Random randomer = new java.util.Random();
+  def numFares = 10
+  println "Adding $numFares fares into the database"
+
+  (1..numFares).each {
+    def emp_id = randomEmployee()
+    def pickup = randomAddress()
+    def dropoff = randomAddress()
+    def start = randomStart()
+    def end = start
+    use (TimeCategory) {
+      end = start + (randomer.nextInt(45)).minutes
+    }
+    def fare_charge = randomFare()
+    def driver_fee = (int) (fare_charge * 0.75)
+    def p_rating = randomer.nextInt(5) + 1
+    def d_rating = randomer.nextInt(5) + 1
+    
+    println "Employee $emp_id drove from $pickup to $dropoff from $start to $end; charged $fare_charge, earned $driver_fee; Passenger: $p_rating; Driver: $d_rating"
   }
 }
+
 
 ////////
 // Stick some random fares into the database
@@ -147,8 +172,11 @@ task addFares << {
       def emp_id = randomEmployee()
       def pickup = randomAddress()
       def dropoff = randomAddress()
-      def start = null
-      def end = null
+      def start = randomStart()
+      def end = start
+      use (TimeCategory) {
+        end = start + (randomer.nextInt(45)).minutes
+      }
       def fare_charge = randomFare()
       def driver_fee = (int) (fare_charge * 0.75)
       def p_rating = randomer.nextInt(5) + 1
