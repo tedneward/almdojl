@@ -1,5 +1,8 @@
 package com.microsoft.example;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.sql.*;
 import javax.sql.*;
 import com.microsoft.example.models.*;
@@ -27,6 +30,7 @@ public class DataAccess
 		}
 		catch (Exception ex) {
 			// Eh.... just give up
+            ex.printStackTrace();
 			System.exit(-1);
 		}
 	}
@@ -45,7 +49,17 @@ public class DataAccess
 		}
 	}
 
+	/**
+	 * Simple check to see if login succeeds, without returning the Employee model
+	 */
 	public static boolean loginSuccessful(String employeeEmail, String employeePassword) {
+		return (login(employeeEmail, employeePassword) != null);
+	}
+	
+	/**
+	 * Retrieve an employee by username/email and password
+	 */
+	public static Employee login(String employeeEmail, String employeePassword) {
 		try {
 			LOGIN.clearParameters();
 
@@ -53,32 +67,52 @@ public class DataAccess
 			LOGIN.setString(2, employeePassword);
 			
 			try (ResultSet rs = LOGIN.executeQuery()) {
-				if (rs.next())
-					return true;
+				if (rs.next()) {
+					Employee emp = new Employee(rs.getInt("id"), rs.getString("username"), rs.getString("password"));
+					return emp;
+				}
 				else
-					return false;
+					return null;
 			}
-		}
-		catch (SQLException sqlEx) {
-			sqlEx.printStackTrace();
-			return false;
-		}
-	}
-	
-	public static ResultSet employeeFares(int empID) {
-		try {
-			FARES.clearParameters();
-	
-			FARES.setInt(1, empID);
-			
-			return FARES.executeQuery();
 		}
 		catch (SQLException sqlEx) {
 			sqlEx.printStackTrace();
 			return null;
 		}
 	}
-	public static ResultSet employeeFares(Employee emp) {
+
+	/**
+	 * Return all the fares for a given Employee's ID #
+	 */	
+	public static List<Fare> employeeFares(int empID) {
+		try {
+			FARES.clearParameters();
+	
+			FARES.setInt(1, empID);
+			
+			try (ResultSet rs = FARES.executeQuery()) {
+                List<Fare> results = new ArrayList<Fare>(20);
+                while (rs.next()) {
+                    results.add(new Fare(rs.getInt("id"), rs.getInt("emp_id"),
+                        rs.getString("pickup"), rs.getString("dropoff"),
+                        rs.getDate("start"), rs.getDate("end"),
+                        rs.getInt("fare_charge"), rs.getInt("driver_fee"),
+                        rs.getInt("passenger_rating"), rs.getInt("driver_rating")
+                    ));
+                }
+                return results;
+            }
+		}
+		catch (SQLException sqlEx) {
+			sqlEx.printStackTrace();
+			return Collections.emptyList();
+		}
+	}
+	
+	/**
+	 * Return all the fares for a given Employee object
+	 */
+	public static List<Fare> employeeFares(Employee emp) {
 		return employeeFares(emp.getID());
 	}
 }

@@ -1,4 +1,4 @@
-package com.microsofot.example.models;
+package com.microsoft.example.models;
 
 import java.util.Date;
 
@@ -9,6 +9,22 @@ import java.util.Date;
 public class Fare
 {
 	public Fare() { }
+    
+    public Fare(int id, int empId, String pickup, String dropoff,
+        Date start, Date end, int fare, int fee, 
+        int pRating, int dRating) 
+    {
+        this.id = id;
+        this.employeeID = empId;
+        this.pickupLocation = pickup;
+        this.dropoffLocation = dropoff;
+        this.start = start;
+        this.end = end;
+        this.farePrice = fare;
+        this.driverFee = fee;
+        this.passengerRating = pRating;
+        this.driverRating = dRating;
+    }
 	
 	public int getId() { return id; }
 	
