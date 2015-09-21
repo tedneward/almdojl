@@ -1,5 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <html>
 
 <head>
@@ -18,14 +18,22 @@
                 <th>Pickup</th>
                 <th>End</th>
                 <th>Dropoff</th>
+                <th>Fare</th>
+                <th>Driver</th>
+                <th>Pass Rtg</th>
+                <th>Drvr Rtg</th>
             </tr>
         <c:forEach items="${requestScope.employeeList}" var="fare">
             <tr>
-                <td><c:out value="${fare.id}"></c:out></td>
-                <td><c:out value="${fare.start}"></c:out></td>
-                <td><c:out value="${fare.pickup}"></c:out></td>
-                <td><c:out value="${fare.end}"></c:out></td>
-                <td><c:out value="${fare.dropoff}"></c:out></td>
+                <td>${fare.id}</td>
+                <td><fmt:formatDate value="${fare.start}" pattern="HH:mm:ss yyyy-MM-dd" /></td>
+                <td>${fare.pickup}</td>
+                <td><fmt:formatDate value="${fare.end}" pattern="HH:mm:ss yyyy-MM-dd" /></td>
+                <td>${fare.dropoff}</td>
+                <td>$ ${fare.fareInDollars}</td>
+                <td>$ ${fare.driverFeeInDollars}</td>
+                <td>${fare.passengerRating}</td>
+                <td>${fare.driverRating}</td>
             </tr>
         </c:forEach>
         </tbody>

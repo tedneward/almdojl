@@ -95,7 +95,7 @@ public class DataAccess
                 while (rs.next()) {
                     results.add(new Fare(rs.getInt("id"), rs.getInt("emp_id"),
                         rs.getString("pickup"), rs.getString("dropoff"),
-                        rs.getDate("start"), rs.getDate("end"),
+                        rs.getTimestamp("start"), rs.getTimestamp("end"),
                         rs.getInt("fare_charge"), rs.getInt("driver_fee"),
                         rs.getInt("passenger_rating"), rs.getInt("driver_rating")
                     ));

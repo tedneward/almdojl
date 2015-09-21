@@ -16,7 +16,7 @@ dependencies {
   driver group: 'mysql', name: 'mysql-connector-java', version: '5.1.36'
 
   providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
-  runtime 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
+  runtime 'javax.servlet:jstl:1.2'
   runtime 'mysql:mysql-connector-java:5.1.36'
   
   testCompile "junit:junit:4.12"

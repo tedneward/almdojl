@@ -44,11 +44,11 @@ public class Fare
 	public void setEnd(Date value) { end = value; }
 	
 	public int getFare() { return farePrice; }
-	public float getFareInDollars() { return farePrice / 100; }
+	public float getFareInDollars() { return ((float)farePrice) / 100.0f; }
 	public void setFare(int value) { farePrice = value; }
 	
 	public int getDriverFee() { return driverFee; }
-	public float getDriverFeeInDollars() { return driverFee / 100; }
+	public float getDriverFeeInDollars() { return ((float)driverFee) / 100.0f; }
 	public void setDriverFee(int value) { driverFee = value; }
 
 	public int getPassengerRating() { return passengerRating; }
