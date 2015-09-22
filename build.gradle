@@ -95,7 +95,10 @@ war {
 // for the Manager GUI for easier admin of Tomcat in an Azure VM
 // instance
 //
+// On my Mac it's 
 String tomcatDir = '/usr/local/Cellar/tomcat/8.0.26/libexec/'
+// On Ubuntu it's
+//String tomcatDir = '/var/lib/tomcat7/'
 task setUpTomcatConf(type: Copy) << {
 	println "==> Setting up tomcat conf/tomcat-users.xml:"
   
@@ -106,5 +109,8 @@ task setUpTomcatConf(type: Copy) << {
   println file(tomcatDir + '/conf/tomcat-users.xml').text
 }
 
-
+task deploy(type:Copy) << {
+  from 'build/libs/almdojl.war'
+  into tomcatDir + 'webapps'
+}
 
