@@ -8,13 +8,17 @@ Bring the local Ubuntu install cache up to do by running:
 sudo apt-get update
 ```
   
-## Install Java7 (depending on Ubuntu version):
+## Install Java7:
+
+By installing "default-jdk", we'll install the version of Java that's "appropriate" to the version of Ubuntu that we're using. Since we're using Ubuntu 14.x, it'll install Java7.
 
 ```
 sudo apt-get install default-jdk
 ```
 
-## Install Tomcat7 (Tomcat8 not in the Ubuntu package distros yet):
+## Install Tomcat7:
+
+Tomcat 8.x is not yet in the Ubuntu distribution repositories yet, but that's OK because there's been no functional difference between the versions of Tomcat since around version 5 or so.
 
 ```
 sudo apt-get install tomcat7
@@ -40,12 +44,12 @@ Restart Tomcat to get those changes to take effect
 sudo service tomcat7 restart
 ```
 
-By default, Tomcat is configured to run on port 8080
+By default, Tomcat is configured to run on port 8080; browse to it if you want to make sure it's all working.
 
     
 ## Install Gradle
 
-Run this:
+Run these four commands from the terminal window:
 
 ```  
 cd ~
@@ -54,14 +58,16 @@ unzip gradle-2.7-bin.zip
 rm gradle-2.7-bin.zip
 ```
 
-Add these to to ~/.profile:
+This will put Gradle into a directory under the vmAdmin's user directory.
+
+Add these to to ~/.profile so that they're always there from now on:
 
 ```
 GRADLE_HOME="/home/vmAdmin/gradle-2.7"
 PATH=$GRADLE_HOME/bin:$PATH
 ```
   
-Either log out or "reboot" the current environment with:
+Either log out and log back in again so the new environment variables take effect, or "reboot" the current environment with:
   
 ```
 source .profile
@@ -82,9 +88,9 @@ sudo apt-get install git
 sudo apt-get install mysql-server-5.6
 ```
   
-(Note this install will switch to a text UI and ask you for a root
+Note this install will switch to a text UI and ask you for a root
 password to use. You can leave it blank, but we recommend something
-really secure, like "password".)
+really secure, like "password".
 
 After MySQL is installed and running, connect to it to create the user
 that we use from the Gradle script and Java code:
@@ -107,7 +113,10 @@ SELECT User,Host FROM mysql.user;
 ```
 git clone https://github.com/tedneward/almdojl.git almdojl
 ``` 
+
 ## Create and seed the database
+
+From the `almdojl` directory, do this:
 
 ```
 gradle createDB seedDB
