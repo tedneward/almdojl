@@ -23,6 +23,10 @@ dependencies {
   testRuntime 'mysql:mysql-connector-java:5.1.36'
 }
 
+tasks.withType(Test) {
+  exclude "**/DataTests.class"
+}
+
 URLClassLoader loader = GroovyObject.class.classLoader
 configurations.driver.each {File file ->
   loader.addURL(file.toURL())
