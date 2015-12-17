@@ -7,6 +7,7 @@ import java.util.Date;
  * in the database.
  */
 public class Fare
+    implements java.io.Serializable
 {
 	public Fare() { }
     

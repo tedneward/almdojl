@@ -3,12 +3,12 @@
 <html>
 
 <head>
-  <title>Employee Fares</title>
+  <title>Employee Fares - <c:out value="${employee.username}"></c:out></title>
 </head>
 
 <body>
 
-    <h1>Employee Fares: <c:out value="${employee.username}"></c:out></h1>
+    <h1>Employee Fares for <c:out value="${employee.username}"></c:out></h1>
     
     <table>
         <tbody>
@@ -23,7 +23,7 @@
                 <th>Pass Rtg</th>
                 <th>Drvr Rtg</th>
             </tr>
-        <c:forEach items="${requestScope.employeeList}" var="fare">
+        <c:forEach items="${employeeList}" var="fare">
             <tr>
                 <td>${fare.id}</td>
                 <td><fmt:formatDate value="${fare.start}" pattern="HH:mm:ss yyyy-MM-dd" /></td>

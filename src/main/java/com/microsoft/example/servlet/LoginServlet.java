@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import com.microsoft.example.*;
 import com.microsoft.example.models.*;
 
@@ -15,15 +16,16 @@ public class LoginServlet extends HttpServlet {
                        HttpServletResponse response)
         throws IOException, ServletException
     {
+        HttpSession session = request.getSession();
         String username = request.getParameter("email");
         String password = request.getParameter("password");
         Employee employee = DataAccess.login(username, password);
         if (employee != null) {
-            request.setAttribute("employee", employee);
+            session.setAttribute("employee", employee);
             
             // Fetch all the fares for that employee while we're here
             List<Fare> fareList = DataAccess.employeeFares(employee);
-            request.setAttribute("employeeList", fareList);
+            session.setAttribute("employeeList", fareList);
             
             request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
         }

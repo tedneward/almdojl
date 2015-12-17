@@ -7,6 +7,7 @@ import java.util.List;
  * as part of the employees table.
  */
 public class Employee
+    implements java.io.Serializable
 {
 	public Employee() { }
 	public Employee(int id, String username, String password) {
