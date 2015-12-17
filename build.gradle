@@ -28,6 +28,46 @@ tasks.withType(Test) {
   exclude "**/DataTests.class"
 }
 
+war {
+  baseName "almdojl"
+  webInf { from 'src/main/webap/WEB-INF' }
+}
+
+task hello {
+  doLast {
+    println "Howdy"
+  }
+}
+
+////////
+// Destructive way of ensuring that Tomcat has a good user cred set
+// for the Manager GUI for easier admin of Tomcat in an Azure VM
+// instance
+//
+// On my Mac it's 
+String tomcatDir = '/usr/local/Cellar/tomcat/8.0.30/libexec/'
+// On Ubuntu it's
+//String tomcatDir = '/var/lib/tomcat7/'
+
+println "Tomcat:" + tomcatDir
+
+task setUpTomcatConf(type: Copy) {
+  // Copy src/tomcat-conf/tomcat-users.xml to destination
+  from 'src/tomcat-conf/tomcat-users.xml'
+  into tomcatDir + 'conf'
+}
+setUpTomcatConf.doLast {
+  println "tomcat-users.xml:" + file(tomcatDir + 'conf/tomcat-users.xml').text
+}
+
+task deploy(type: Copy) {
+  description 'Copies the WAR file to ' + tomcatDir
+  from 'build/libs/almdojl.war'
+  into tomcatDir + 'webapps'
+}
+//deploy.outputs.upToDateWhen { false }
+deploy.dependsOn war
+
 URLClassLoader loader = GroovyObject.class.classLoader
 configurations.driver.each {File file ->
   loader.addURL(file.toURL())
@@ -203,33 +243,5 @@ task dropDB << {
 DROP DATABASE alm;
 '''
   }
-}
-
-war {
-  webInf { from 'src/main/webap/WEB-INF' }
-}
-
-////////
-// Destructive way of ensuring that Tomcat has a good user cred set
-// for the Manager GUI for easier admin of Tomcat in an Azure VM
-// instance
-//
-// On my Mac it's 
-String tomcatDir = '/usr/local/Cellar/tomcat/8.0.26/libexec/'
-// On Ubuntu it's
-//String tomcatDir = '/var/lib/tomcat7/'
-task setUpTomcatConf(type: Copy) << {
-	println "==> Setting up tomcat conf/tomcat-users.xml:"
-  
-  // Copy src/tomcat-conf/tomcat-users.xml to destination
-  from 'src/tomcat-conf/tomcat-users.xml'
-  into tomcatDir + 'conf'
-  
-  println file(tomcatDir + '/conf/tomcat-users.xml').text
-}
-
-task deploy(type:Copy) << {
-  from 'build/libs/almdojl.war'
-  into tomcatDir + 'webapps'
 }
 

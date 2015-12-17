@@ -25,7 +25,7 @@ public class LoginServlet extends HttpServlet {
             List<Fare> fareList = DataAccess.employeeFares(employee);
             request.setAttribute("employeeList", fareList);
             
-            request.getRequestDispatcher("/home.jsp").forward(request, response);
+            request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
         }
         else {
             request.getRequestDispatcher("/loginFailed.jsp").forward(request, response);
